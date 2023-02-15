@@ -22,7 +22,6 @@
 #define ETH_HDR_LEN 14
 
 struct timeval begin;
-int g_last;
 
 char *format = "%n,%M,%m,%a,%h,%S,%999M,%999a,%999S,%99M,%99a,%99S";
 
@@ -37,8 +36,8 @@ struct flow {
 };
 
 unsigned char bip[4];
+//int max_size = 1865535;
 int max_size = 1865535;
-//int max_size = 865535;
 struct flow *flow_head,*flow_cur;
 
 typedef struct node_list {
@@ -50,19 +49,19 @@ typedef struct node_list {
     int min;
     int avg;
     int med;
-    int std;
+    //int std;
     int p95max;
     int p95avg;
     int p95med;
-    int p95std;
+    //int p95std;
     int p99max;
     int p99avg;
     int p99med;
-    int p99std;
+    //int p99std;
     int p999max;
     int p999avg;
     int p999med;
-    int p999std;
+    //int p999std;
 } LIST;
 
 struct port_node {
@@ -87,19 +86,19 @@ void list_init(struct port_node *node){
     node->list->max = 0;
     node->list->avg = 0;
     node->list->med = 0;
-    node->list->std = 0;
+    //node->list->std = 0;
     node->list->p95max = 0;
     node->list->p95avg = 0;
     node->list->p95med = 0;
-    node->list->p95std = 0;
+    //node->list->p95std = 0;
     node->list->p99max = 0;
     node->list->p99avg = 0;
     node->list->p99med = 0;
-    node->list->p99std = 0;
+    //node->list->p99std = 0;
     node->list->p999max = 0;
     node->list->p999avg = 0;
     node->list->p999med = 0;
-    node->list->p999std = 0;
+    //node->list->p999std = 0;
     node->list->data = (int *)malloc(sizeof(int) * node->list->size);
     memset(node->list->data, 0, node->list->size * sizeof(int));
 }
@@ -140,6 +139,8 @@ int textCompare(const void *a, const void *b) {
 
 static unsigned long isqrt(unsigned long x)
 {
+    if (x < 1) return 1;
+    //printf("isqrt:%d\n", x);
     unsigned long op, res, one;
 
     op = x;
@@ -167,9 +168,9 @@ void list_print_data(struct port_node *node){
     unsigned long sum = 0;
     unsigned long min = 0;
     unsigned long var = 0;
-    unsigned long p95var = 0;
-    unsigned long p99var = 0;
-    unsigned long p999var = 0;
+    //unsigned long p95var = 0;
+    //unsigned long p99var = 0;
+    //unsigned long p999var = 0;
     //printf("=============list_print_data============\n");
     if (node->list->used < 6){
         return;
@@ -192,25 +193,25 @@ void list_print_data(struct port_node *node){
             node->list->p95max = *(cur+n);
             node->list->p95med = *(cur+n/2);
             node->list->p95avg = sum / (n+1);
-            p95var = var / (n+1);
-            p95var -= node->list->p95avg * node->list->p95avg;
-            node->list->p95std = isqrt(p95var);
+            //p95var = var / (n+1);
+            //p95var -= node->list->p95avg * node->list->p95avg;
+            //node->list->p95std = isqrt(p95var);
         }
         if (n == node->list->used * 99 / 100){
             node->list->p99max = *(cur+n);
             node->list->p99med = *(cur+n/2);
             node->list->p99avg = sum / (n+1);
-            p99var = var / (n+1);
-            p99var -= node->list->p99avg * node->list->p99avg;
-            node->list->p99std = isqrt(p99var);
+            //p99var = var / (n+1);
+            //p99var -= node->list->p99avg * node->list->p99avg;
+            //node->list->p99std = isqrt(p99var);
         }
         if (n == node->list->used * 999 / 1000){
             node->list->p999max = *(cur+n);
             node->list->p999med = *(cur+n/2);
             node->list->p999avg = sum / (n+1);
-            p999var = var / (n+1);
-            p999var -= node->list->p99avg * node->list->p99avg;
-            node->list->p999std = isqrt(p999var);
+            //p999var = var / (n+1);
+            //p999var -= node->list->p99avg * node->list->p99avg;
+            //node->list->p999std = isqrt(p999var);
         }
         //if (n >= node->list->used * 99 / 100) {
         //    //"/usr/local/sinasrv2/bin/tcprstat_new -t 3 -f %n,%M,%m,%a,%h,%S,%95M,%95a,%95S,%99M,%99a,%99S --no-header"
@@ -221,9 +222,9 @@ void list_print_data(struct port_node *node){
     }
     node->list->avg = sum / node->list->used;
     node->list->med = *(cur+node->list->used/2);
-    var /= node->list->used;
-    var -= node->list->avg * node->list->avg;
-    node->list->std = isqrt(var);
+    //var /= node->list->used;
+    //var -= node->list->avg * node->list->avg;
+    //node->list->std = isqrt(var);
 }
 
 void output(struct port_node *node){
@@ -269,11 +270,17 @@ void output(struct port_node *node){
                if (r == 999) printf("%d", node->list->p999avg);
             }
             if (c[0] == 'S'){
-               if (r == 100) printf("%d", node->list->std);
-               if (r == 95) printf("%d", node->list->p99std);
-               if (r == 99) printf("%d", node->list->p99std);
-               if (r == 999) printf("%d", node->list->p999std);
+               if (r == 100) printf("%d", node->list->avg);
+               if (r == 95) printf("%d", node->list->p99avg);
+               if (r == 99) printf("%d", node->list->p99avg);
+               if (r == 999) printf("%d", node->list->p999avg);
             }
+            //if (c[0] == 'S'){
+            //   if (r == 100) printf("%d", node->list->std);
+            //   if (r == 95) printf("%d", node->list->p99std);
+            //   if (r == 99) printf("%d", node->list->p99std);
+            //   if (r == 999) printf("%d", node->list->p999std);
+            //}
             if (c[0] == 'h'){
                if (r == 100) printf("%d", node->list->med);
                if (r == 95) printf("%d", node->list->p99med);
@@ -318,12 +325,30 @@ void list_add_data(LIST *list, int a){
     //printf("=============list_add_data end============\n");
 }
 
-void hash_print(struct flow * hash_head, int hash_used){
+void hash_print(int mn, struct flow * hash_head, int hash_used){
     int i = 0;
     for(i = 0; i < hash_used; i++){
-        if (i % 9 != 0) continue;
-        printf("%d %d.%d.%d.%d:%d \n ", i, (hash_head + i)->src_ip[0], (hash_head + i)->src_ip[1], (hash_head + i)->src_ip[2], (hash_head + i)->src_ip[3], (hash_head + i)->sp[0]<<8|(hash_head + i)->sp[1]);
+        //if (i % 9 != 0) continue;
+        printf("#%d# %d %d.%d.%d.%d:%d \n ", mn, i, (hash_head + i)->src_ip[0], (hash_head + i)->src_ip[1], (hash_head + i)->src_ip[2], (hash_head + i)->src_ip[3], (hash_head + i)->sp[0]<<8|(hash_head + i)->sp[1]);
     }
+}
+
+unsigned long hash(unsigned char *ip, char *sp)
+{
+    unsigned long hash = 5381;
+    int i, c;
+
+    for(i = 0; i < 4; i++){
+        c = *(ip + i);
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    }
+
+    for(i = 0; i < 2; i++){
+        c = *(sp + i);
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    }
+
+    return hash;
 }
 
 void flow_exec(){
@@ -331,58 +356,86 @@ void flow_exec(){
     //bip[0] = 
 
     //printf("bip:%d.%d.%d.%d\n",bip[0], bip[1], bip[2], bip[3]);
-    int hash_used = 0;
-    int hash_size = 10;
+    unsigned long hash_value;
+    int hash_index = 0;
+    int hash_size = 300000;
     int i = 0;
-    struct flow *hash_head = (struct flow *)malloc(hash_size * sizeof(struct flow));
-    memset(hash_head, 0, hash_size * sizeof(struct flow));
+    //int mn = 0;
+    struct flow ***hash_head = (struct flow ***)malloc(hash_size * sizeof(struct flow ***));
+    memset(hash_head, 0, hash_size * sizeof(struct flow ***));
     while (cur->last){
         //cur->
         if (memcmp(cur->dst_ip, bip, 4) == 0){
             //printf("#in pack %d  %d.%d.%d.%d:%d ===> ",cur->last, cur->src_ip[0], cur->src_ip[1], cur->src_ip[2], cur->src_ip[3], cur->sp[0]<<8|cur->sp[1]);
             //printf("%d.%d.%d.%d:%d \n",cur->dst_ip[0], cur->dst_ip[1], cur->dst_ip[2], cur->dst_ip[3], cur->dp[0]<<8|cur->dp[1]);
-            for(i = 0; i < hash_used; i++){
-                if ((memcmp(cur->src_ip, (hash_head + i)->src_ip, 4) == 0) && (memcmp(cur->sp, (hash_head + i)->sp, 2) == 0)){
-                    memcpy(hash_head + i, cur, sizeof(struct flow));
-                    break;
+            hash_value = hash(cur->src_ip, cur->sp);
+            hash_index = hash_value % hash_size;
+            if (*(hash_head + hash_index) == 0){
+                struct flow ** hash_arr = (struct flow **)malloc(2 * sizeof(struct flow **));
+                memset(hash_arr, 0, 2 * sizeof(struct flow **));
+                *hash_arr = cur;
+                *(hash_head + hash_index) = hash_arr;
+            }else if (*(hash_head + hash_index) != 0){
+                struct flow ** hash_arr = *(hash_head + hash_index);
+                for(i = 0; *(hash_arr + i) != 0; i++){
+                    if ((memcmp(cur->src_ip, (*(hash_arr + i))->src_ip, 4) == 0) && (memcmp(cur->sp, (*(hash_arr + i))->sp, 2) == 0)){
+                        *(hash_arr + i) = cur;
+                        break;
+                    }
+                }
+                if (*(hash_arr + i) == 0){
+                    *(hash_arr + i) = cur;
+                    struct flow ** hash_tmp = (struct flow **)malloc((i + 2) * sizeof(struct flow **));
+                    memset(hash_tmp, 0, (i + 2) * sizeof(struct flow **));
+                    memcpy(hash_tmp, hash_arr, (i + 1) * sizeof(struct flow **));
+                    free(hash_arr);
+                    *(hash_head + hash_index) = hash_tmp;
                 }
             }
-            if (i == hash_used){
-	        memcpy(hash_head + hash_used, cur, sizeof(struct flow));
-                hash_used ++;
-            }
-            if (hash_size < hash_used * 1.2){
-                hash_size = hash_size * 1.2;
-                struct flow *hash_tmp = (struct flow *)malloc(hash_size * sizeof(struct flow));
-                memcpy(hash_tmp, hash_head, hash_used * sizeof(struct flow));
-                free(hash_head);
-                hash_head = hash_tmp;
-            }
-        }
-        if (memcmp(cur->src_ip, bip, 4) == 0){
+             
+      }
+      if (memcmp(cur->src_ip, bip, 4) == 0){
 	    //printf("#out pack %d %d.%d.%d.%d:%d <===", cur->last, cur->dst_ip[0], cur->dst_ip[1], cur->dst_ip[2], cur->dst_ip[3], cur->dp[0]<<8|cur->dp[1]);
 	    //printf("%d.%d.%d.%d:%d \n",cur->src_ip[0], cur->src_ip[1], cur->src_ip[2], cur->src_ip[3], cur->sp[0]<<8|cur->sp[1]);
-            for(i = 0; i < hash_used; i++){
-                if ((memcmp(cur->dst_ip, (hash_head + i)->src_ip, 4) == 0) && (memcmp(cur->dp, (hash_head + i)->sp, 2) == 0)){
-                    LIST *list = get_list_from_port(cur->sp[0]<<8|cur->sp[1]);   
-                    int sla = cur->last - (hash_head + i)->last;
-                    //if (sla > 7000){
-                    //    printf("port: %d, sla:%d\n", cur->sp[0]<<8|cur->sp[1], sla);
-                    //    printf("in pack %d  %d.%d.%d.%d:%d ===> ",(hash_head + i)->last, (hash_head + i)->src_ip[0], (hash_head + i)->src_ip[1], (hash_head + i)->src_ip[2], (hash_head + i)->src_ip[3], (hash_head + i)->sp[0]<<8|(hash_head + i)->sp[1]);
-                    //    printf("%d.%d.%d.%d:%d \n",(hash_head + i)->dst_ip[0], (hash_head + i)->dst_ip[1], (hash_head + i)->dst_ip[2], (hash_head + i)->dst_ip[3], (hash_head + i)->dp[0]<<8|(hash_head + i)->dp[1]);
-                    //    printf("out pack %d %d.%d.%d.%d:%d <===", cur->last, cur->dst_ip[0], cur->dst_ip[1], cur->dst_ip[2], cur->dst_ip[3], cur->dp[0]<<8|cur->dp[1]);
-                    //    printf("%d.%d.%d.%d:%d \n",cur->src_ip[0], cur->src_ip[1], cur->src_ip[2], cur->src_ip[3], cur->sp[0]<<8|cur->sp[1]);
-                    //}
-                    list_add_data(list, sla);
-                    memcpy(hash_head + i, hash_head + i + 1, (hash_used - i) * sizeof(struct flow));
-		    hash_used--;
-                    break;
+            hash_value = hash(cur->dst_ip, cur->dp);
+            hash_index = hash_value % hash_size;
+            if (*(hash_head + hash_index) != 0){
+                struct flow ** hash_arr = *(hash_head + hash_index);
+                int find_index = -1;
+                for(i = 0; *(hash_arr + i) != 0; i++){
+	    //printf("before src  \n");
+	    //printf("#src pack %d %d.%d.%d.%d:%d \n", (*(hash_arr + i))->last, (*(hash_arr + i))->dst_ip[0], (*(hash_arr + i))->dst_ip[1], (*(hash_arr + i))->dst_ip[2], (*(hash_arr + i))->dst_ip[3], (*(hash_arr + i))->dp[0]<<8|(*(hash_arr + i))->dp[1]);
+	    //printf("#src pack %d \n", (*(hash_arr + i))->last);
+	    //printf("after src  \n");
+                    if ((memcmp(cur->dst_ip, (*(hash_arr + i))->src_ip, 4) == 0) && (memcmp(cur->dp, (*(hash_arr + i))->sp, 2) == 0)){
+                        find_index = i;
+                        //printf("find index\n");
+                        LIST *list = get_list_from_port(cur->sp[0]<<8|cur->sp[1]);   
+                        int sla = cur->last - (*(hash_arr + i))->last;
+                        list_add_data(list, sla);
+                    }
                 }
-            }
-        }
-        cur++;
-        //hash_print(hash_head, hash_used);
+                if ( (find_index >= 0) && (i - find_index == 1) ){
+                    free(*(hash_head + hash_index));
+                    *(hash_head + hash_index) = 0;
+                } else if ( (find_index >= 0) && (i - find_index > 1) ){
+                    //printf("before find_index > 1 \n");
+                    struct flow ** hash_tmp = (struct flow **)malloc(i * sizeof(struct flow **));
+                    memset(hash_tmp, 0, i * sizeof(struct flow **));
+                    memcpy(hash_tmp, hash_arr, find_index * sizeof(struct flow **));
+                    memcpy(hash_tmp + find_index, hash_arr + find_index + 1, (i - find_index) * sizeof(struct flow **));
+                    //printf("before free hash_arr \n");
+                    free(hash_arr);
+                    //printf("after free hash_arr \n");
+                    *(hash_head + hash_index) = hash_tmp;
+                }
+             }
+       }
+       cur++;
     }
+        //mn++;
+        //if (mn % 11359 != 0) continue;
+        //hash_print(mn, hash_head, hash_used);
 }
 
 int fn = 0;
@@ -405,11 +458,11 @@ void CallBackPacket(struct tpacket_hdr *pHead)
     // header length as 32-bit
     if (iphead[9] != 6) return;
 
-    g_last = c_last = (pHead->tp_sec - begin.tv_sec) * 1000 * 1000 + (pHead->tp_usec - begin.tv_usec) / 1;
+    c_last = (pHead->tp_sec - begin.tv_sec) * 1000 * 1000 + (pHead->tp_usec - begin.tv_usec) / 1;
     int dp, sp;
     sp = iphead[20]<<8|iphead[21];
     dp = iphead[22]<<8|iphead[23];
-    //if (dp != 53662 && sp != 53662){
+    //if (dp != 53682 && sp != 53682){
     //    return;
     //}
     //if (dp == 53662 ) {
@@ -436,10 +489,10 @@ void CallBackPacket(struct tpacket_hdr *pHead)
     //if (c_last > c_max_last){
     //    c_max_last = c_last;
     //}else if (c_last < c_max_last){
-    ////}else {
+    //////}else {
     //    return;
-    //    //printf("pHead->tp_sec:%u, begin.tv_sec:%ld, last:%d\n",pHead->tp_sec, begin.tv_sec, c_last);
-    //    //printf("pHead->tp_len:%d, pHead->tp_mac:%d, PORT [%d]->[%d]\n", pHead->tp_len, pHead->tp_mac,(iphead[20]<<8|iphead[21]), (iphead[22]<<8|iphead[23]));
+    ////    //printf("pHead->tp_sec:%u, begin.tv_sec:%ld, last:%d\n",pHead->tp_sec, begin.tv_sec, c_last);
+    ////    //printf("pHead->tp_len:%d, pHead->tp_mac:%d, PORT [%d]->[%d]\n", pHead->tp_len, pHead->tp_mac,(iphead[20]<<8|iphead[21]), (iphead[22]<<8|iphead[23]));
     //}
     //printf("fn: %d, flow_cur->last: %d, max_last: %d, c_last: %d, pHead->tp_sec:%u, pHead->tp_usec:%u \n", fn, flow_cur->last, c_max_last, c_last, pHead->tp_sec, pHead->tp_usec);
     memcpy(flow_cur->src_ip, iphead+12, 12);
